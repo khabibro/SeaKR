@@ -109,7 +109,7 @@ async def main(args):
     engine_args = AsyncEngineArgs(
         model=args.model_name_or_path,
         served_model_name=args.served_model_name,
-        tensor_parallel_size=2,
+        tensor_parallel_size=1,
         gpu_memory_utilization=0.9,
         selected_intermediate_layer=args.selected_intermediate_layer, #default 15
         eigen_alpha=args.eigen_alpha, # default 1e-3,

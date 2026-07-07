@@ -120,7 +120,7 @@ if __name__=="__main__":
 
     model = LLM(
         model=args.model_name_or_path,
-        tensor_parallel_size=2,
+        tensor_parallel_size=1,
         gpu_memory_utilization=0.9,
         selected_intermediate_layer=args.selected_intermediate_layer, #default 15
         eigen_alpha=1e-3, # default 1e-3,
