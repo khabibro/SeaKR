@@ -1,5 +1,31 @@
 # SeaKR
 
+## Research Project Layout
+
+This checkout is organized for local smoke tests and Azure GPU reproduction runs.
+
+- `SEAKR/`, `main_multihop.py`, `main_simpleqa.py`, `build_wiki_index.py`: original SeaKR implementation files.
+- `src/`: reserved for future source-code organization.
+- `scripts/`: small helper scripts and run wrappers.
+- `configs/`: local and Azure run manifests.
+- `data/`: local or Azure datasets only; do not commit large files.
+- `models/`: model checkpoints only; do not commit model weights.
+- `outputs/`: logs, predictions, tables, and figures from experiments.
+- `experiments/`: mini and full experiment notes.
+- `docs/`: setup, Azure, dataset, and reproduction documentation.
+
+Use environment variables for machine-specific paths:
+
+```bash
+export DATA_DIR="${DATA_DIR:-data}"
+export MODEL_DIR="${MODEL_DIR:-models}"
+export OUTPUT_DIR="${OUTPUT_DIR:-outputs}"
+export HF_HOME="${HF_HOME:-.cache/huggingface}"
+```
+
+Do not store datasets, model weights, logs, or experiment outputs in Obsidian.
+Download datasets and models directly on the machine that runs the experiment.
+
 ## Getting Started
 
 ### Install Environment

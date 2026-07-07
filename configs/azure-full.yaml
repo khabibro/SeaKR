@@ -1,0 +1,24 @@
+# Azure full reproduction configuration.
+data_dir: "${DATA_DIR:-data}"
+model_dir: "${MODEL_DIR:-models}"
+output_dir: "${OUTPUT_DIR:-outputs}"
+hf_home: "${HF_HOME:-.cache/huggingface}"
+
+retriever:
+  engine: elasticsearch
+  index_name: wiki
+  host: localhost
+  port: 9201
+
+model:
+  name_or_path: "${MODEL_DIR:-models}/Llama-2-7b-chat-hf"
+  served_model_name: llama2-7b-chat
+  selected_intermediate_layer: 15
+  tensor_parallel_size: 1
+
+run:
+  dataset_name: hotpotqa
+  n_shot: 10
+  eigen_threshold: -6.0
+  max_reasoning_steps: 7
+  max_docs: 5

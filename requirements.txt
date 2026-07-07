@@ -1,0 +1,14 @@
+# Lightweight SeaKR environment reference.
+# For the exact environment captured on macOS, see requirements-seakr-lock.txt.
+beir==1.0.1
+spacy==3.7.2
+aiofiles
+tenacity
+pandas
+tqdm
+transformers==4.40.2
+tokenizers==0.19.1
+torch==2.3.0
+sentence-transformers==2.7.0
+faiss-cpu
+gdown
