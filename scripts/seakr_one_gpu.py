@@ -12,6 +12,7 @@ from pathlib import Path
 from statistics import mean
 from typing import Any, Dict, List, Optional
 
+import torch
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -97,12 +98,34 @@ def _build_retriever(tokenizer, retriever_port: int):
     )
 
 
+def _embedding_diagnostics(request_output, eigen_alpha: float) -> Dict[str, Any]:
+    embeddings = [
+        getattr(out, "eos_embedding", None)
+        for out in request_output.outputs
+        if getattr(out, "eos_embedding", None) is not None
+    ]
+    if not embeddings:
+        return {"embedding_count": 0}
+
+    stacked = torch.stack([emb.detach().to(torch.float32).cpu() for emb in embeddings])
+    k, d = stacked.shape
+    j_d = torch.eye(d) - (1 / d) * torch.ones(d, d)
+    sigma = torch.einsum("ij,jk,kl->il", stacked, j_d, stacked.t())
+    gram_logdet = ((1 / k) * torch.logdet(sigma + eigen_alpha * torch.eye(k))).item()
+    return {
+        "embedding_count": len(embeddings),
+        "embedding_shape": [k, d],
+        "gram_matrix_shape": [k, k],
+        "gram_logdet": gram_logdet,
+    }
+
+
 async def check_environment_async(args: argparse.Namespace) -> None:
     model_path = Path(args.model_name_or_path)
     if not model_path.exists():
         raise FileNotFoundError(
             f"Model path does not exist: {model_path}. "
-            "Set MODEL_NAME_OR_PATH to a local model directory on Azure."
+            "Set MODEL_NAME_OR_PATH to a local model directory on the university machine."
         )
 
     tokenizer = _build_tokenizer(args.model_name_or_path)
@@ -130,10 +153,12 @@ async def check_environment_async(args: argparse.Namespace) -> None:
     )
     request_output = llm.generate(["Smoke test"], sampling_params)[0]
     uncertainty = getattr(request_output, "uncertainty", {})
+    diagnostics = _embedding_diagnostics(request_output, args.eigen_alpha)
 
     print("vllm_model_loaded: yes")
     print(f"hidden_state_path: {args.selected_intermediate_layer}")
     print(f"uncertainty_keys: {sorted(uncertainty.keys())}")
+    print(f"embedding_diagnostics: {diagnostics}")
     if "eigen_score" not in uncertainty:
         raise RuntimeError(
             "Expected eigen_score to be computed during environment check."
@@ -142,6 +167,12 @@ async def check_environment_async(args: argparse.Namespace) -> None:
         raise RuntimeError(
             "Expected a perplexity or entropy signal during environment check."
         )
+    if diagnostics.get("embedding_count", 0) == 0:
+        raise RuntimeError("Expected hidden-state embeddings to be attached.")
+    if "gram_matrix_shape" not in diagnostics:
+        raise RuntimeError("Expected Gram matrix diagnostics.")
+    if "gram_logdet" not in diagnostics:
+        raise RuntimeError("Expected Gram determinant diagnostics.")
     print(f"eigen_score: {uncertainty.get('eigen_score')}")
     print(f"perplexity: {uncertainty.get('perplexity')}")
 
@@ -311,7 +342,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="SeaKR single-GPU verification helper.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    env = subparsers.add_parser("check-environment", help="Verify the Azure GPU environment.")
+    env = subparsers.add_parser("check-environment", help="Verify the GPU environment.")
     _add_common_args(env)
 
     smoke = subparsers.add_parser("run-smoke-test", help="Run one example through the SeaKR pipeline.")

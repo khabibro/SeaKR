@@ -1,0 +1,21 @@
+# University server configuration manifest.
+
+DATA_DIR: "${DATA_DIR:-/path/to/datasets}"
+MODEL_DIR: "${MODEL_DIR:-/path/to/models}"
+OUTPUT_DIR: "${OUTPUT_DIR:-/path/to/outputs}"
+HF_HOME: "${HF_HOME:-/path/to/huggingface-cache}"
+ES_HOST: "${ES_HOST:-localhost}"
+ES_PORT: "${ES_PORT:-9201}"
+
+MODEL_NAME: "${MODEL_NAME:-meta-llama/Llama-2-7b-chat-hf}"
+SERVED_MODEL_NAME: "${SERVED_MODEL_NAME:-llama2-7b-chat}"
+tensor_parallel_size: "${SEAKR_TENSOR_PARALLEL_SIZE:-auto}"
+selected_intermediate_layer: 15
+eigen_threshold: -6.0
+pseudo_generation_count: 20
+
+run:
+  dataset_name: hotpotqa
+  n_shot: 10
+  max_reasoning_steps: 7
+  max_docs: 5

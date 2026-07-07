@@ -25,6 +25,22 @@ class HyperParams:
     max_docs: int
 
 error_count = 0
+
+def default_tensor_parallel_size() -> int:
+    configured = os.environ.get("SEAKR_TENSOR_PARALLEL_SIZE")
+    if configured:
+        return int(configured)
+
+    try:
+        import torch
+        gpu_count = torch.cuda.device_count()
+    except Exception:
+        gpu_count = 0
+
+    if gpu_count >= 2:
+        return 2
+    return 1
+
 async def run_one_question(semaphore, entry, dataset_obj, llm_engine, retriever, logger_dir, finished_file, failed_file, lock, progress_bar, hyperparams: HyperParams):
     global error_count
     async with semaphore: 
@@ -109,7 +125,7 @@ async def main(args):
     engine_args = AsyncEngineArgs(
         model=args.model_name_or_path,
         served_model_name=args.served_model_name,
-        tensor_parallel_size=1,
+        tensor_parallel_size=args.tensor_parallel_size,
         gpu_memory_utilization=0.9,
         selected_intermediate_layer=args.selected_intermediate_layer, #default 15
         eigen_alpha=args.eigen_alpha, # default 1e-3,
@@ -142,8 +158,9 @@ if __name__ == "__main__":
     parser.add_argument("--n_shot", type=int, default=10, help="Number of examples per task.")
     parser.add_argument("--model_name_or_path", required=True, help="Pre-trained model name or path.")
     parser.add_argument("--served_model_name", required=True, help="Model name for serving.")
+    parser.add_argument("--tensor_parallel_size", type=int, default=default_tensor_parallel_size(), help="vLLM tensor parallel size. Defaults to 2 when at least two CUDA GPUs are visible, otherwise 1. Override with SEAKR_TENSOR_PARALLEL_SIZE.")
     parser.add_argument("--selected_intermediate_layer", type=int, default=15, help="Selected layer for processing.")
-    parser.add_argument("--eigen_alpha", type=int, default=1e-3, help="eigen alpha to compute eigen score")
+    parser.add_argument("--eigen_alpha", type=float, default=1e-3, help="eigen alpha to compute eigen score")
     parser.add_argument("--eigen_threshold", type=float, default=-6.0, help="Threshold for eigen score.")
     parser.add_argument("--prob_threshold", type=float, default=0.1, help="Log probability threshold to form query.")
     parser.add_argument("--max_reasoning_steps", type=int, default=10, help="Maximum reasoning steps.")

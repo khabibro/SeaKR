@@ -9,4 +9,4 @@ Use:
 - `data/raw/` for original downloaded archives and source files.
 - `data/processed/` for extracted or transformed datasets and retrieval indexes.
 
-For Azure runs, clone the repository first, then download datasets on Azure into `$DATA_DIR`. This avoids pushing large files through Git and avoids copying unnecessary assets through Obsidian.
+For university runs, clone the repository first, then download datasets on the university machine into `$DATA_DIR`. This avoids pushing large files through Git and avoids copying unnecessary assets through Obsidian.

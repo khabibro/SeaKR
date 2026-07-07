@@ -2,17 +2,17 @@
 
 ## Research Project Layout
 
-This checkout is organized for local smoke tests and Azure GPU reproduction runs.
+This checkout is organized for local smoke tests and university GPU reproduction runs.
 
 - `SEAKR/`, `main_multihop.py`, `main_simpleqa.py`, `build_wiki_index.py`: original SeaKR implementation files.
 - `src/`: reserved for future source-code organization.
 - `scripts/`: small helper scripts and run wrappers.
-- `configs/`: local and Azure run manifests.
-- `data/`: local or Azure datasets only; do not commit large files.
+- `configs/`: local and university run manifests.
+- `data/`: local or university datasets only; do not commit large files.
 - `models/`: model checkpoints only; do not commit model weights.
 - `outputs/`: logs, predictions, tables, and figures from experiments.
 - `experiments/`: mini and full experiment notes.
-- `docs/`: setup, Azure, dataset, and reproduction documentation.
+- `docs/`: setup, dataset, and reproduction documentation.
 
 Use environment variables for machine-specific paths:
 
@@ -21,6 +21,18 @@ export DATA_DIR="${DATA_DIR:-data}"
 export MODEL_DIR="${MODEL_DIR:-models}"
 export OUTPUT_DIR="${OUTPUT_DIR:-outputs}"
 export HF_HOME="${HF_HOME:-.cache/huggingface}"
+```
+
+For paper-style multi-GPU runs, set tensor parallelism explicitly before running:
+
+```bash
+export SEAKR_TENSOR_PARALLEL_SIZE=2
+```
+
+On a single-GPU server, either leave it unset and let the entrypoint auto-detect one visible GPU, or set:
+
+```bash
+export SEAKR_TENSOR_PARALLEL_SIZE=1
 ```
 
 Do not store datasets, model weights, logs, or experiment outputs in Obsidian.

@@ -1,0 +1,53 @@
+# Strict SeaKR paper reproduction manifest.
+# Source of truth: SeaKR paper arXiv:2406.19215 and official THU-KEG/SeaKR README.
+
+model:
+  name: meta-llama/Llama-2-7b-chat-hf
+  served_model_name: llama2-7b-chat
+  local_path: "${MODEL_NAME_OR_PATH:-${MODEL_DIR}/Llama-2-7b-chat-hf}"
+
+runtime:
+  python: "3.10"
+  torch: "2.3.0"
+  vllm_source: "modified vLLM 0.4.2 in vllm_uncertainty/"
+  elasticsearch_service: "7.17.9"
+  tensor_parallel_size: "${SEAKR_TENSOR_PARALLEL_SIZE:-auto}"
+
+retrieval:
+  engine: BM25
+  service: Elasticsearch
+  index_name: wiki
+  wikipedia_dump: "English Wikipedia dump from 2018-12-20 via DPR psgs_w100.tsv"
+  retrieved_passages: 3
+
+uncertainty:
+  pseudo_generation_count: 20
+  selected_intermediate_layer: 15
+  eigen_alpha: 0.001
+  eigen_threshold: -6.0
+
+prompting:
+  n_shot: 10
+
+multihop:
+  datasets:
+    - twowikihop
+    - hotpotqa
+    - iirc
+  max_reasoning_steps: 7
+  max_docs: 5
+
+simpleqa:
+  datasets:
+    - nq
+    - tq
+    - sq
+  search_time: 1
+
+evaluation:
+  metrics:
+    - exact_match
+    - f1
+  official_files:
+    - eval_multihop.ipynb
+    - eval_singlehop.ipynb

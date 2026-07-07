@@ -7,6 +7,21 @@ import json
 import os
 from tqdm import tqdm
 
+def default_tensor_parallel_size() -> int:
+    configured = os.environ.get("SEAKR_TENSOR_PARALLEL_SIZE")
+    if configured:
+        return int(configured)
+
+    try:
+        import torch
+        gpu_count = torch.cuda.device_count()
+    except Exception:
+        gpu_count = 0
+
+    if gpu_count >= 2:
+        return 2
+    return 1
+
 def get_answer(output_text):
     pattern = r'the answer is(?:\s*:\s*)?(.*?)[,.]'
     match = re.search(pattern, output_text.lower(), re.DOTALL)
@@ -102,6 +117,7 @@ if __name__=="__main__":
     parser.add_argument("--dataset_name", type=str, required=True, choices=['nq', 'sq', 'tq'])
     parser.add_argument("--model_name_or_path", type=str, required=True)
     parser.add_argument("--selected_intermediate_layer", type=int, default=15)
+    parser.add_argument("--tensor_parallel_size", type=int, default=default_tensor_parallel_size())
     parser.add_argument("--output_dir", type=str, required=True)
     args = parser.parse_args()
 
@@ -120,7 +136,7 @@ if __name__=="__main__":
 
     model = LLM(
         model=args.model_name_or_path,
-        tensor_parallel_size=1,
+        tensor_parallel_size=args.tensor_parallel_size,
         gpu_memory_utilization=0.9,
         selected_intermediate_layer=args.selected_intermediate_layer, #default 15
         eigen_alpha=1e-3, # default 1e-3,

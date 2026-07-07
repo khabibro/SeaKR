@@ -4,11 +4,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 
-MODEL_NAME_OR_PATH="${MODEL_NAME_OR_PATH:-${ROOT}/models/Llama-2-7b-chat-hf}"
-OUTPUT_DIR="${OUTPUT_DIR:-${ROOT}/outputs/mini}"
+MODEL_NAME_OR_PATH="${MODEL_NAME_OR_PATH:-${MODEL_DIR:-${ROOT}/models}/Llama-2-7b-chat-hf}"
 DATASET_NAME="${DATASET_NAME:-hotpotqa}"
 RETRIEVER_PORT="${RETRIEVER_PORT:-9201}"
-LIMIT="${LIMIT:-20}"
+OUTPUT_DIR="${OUTPUT_DIR:-${ROOT}/outputs/mini}"
 
 mkdir -p "${OUTPUT_DIR}"
 
@@ -17,4 +16,7 @@ mkdir -p "${OUTPUT_DIR}"
   --dataset-name "${DATASET_NAME}" \
   --retriever-port "${RETRIEVER_PORT}" \
   --output-dir "${OUTPUT_DIR}" \
-  --limit "${LIMIT}" | tee "${OUTPUT_DIR}/logs.txt"
+  --limit 20
+
+echo "mini eval outputs:"
+ls -la "${OUTPUT_DIR}"

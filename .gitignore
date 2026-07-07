@@ -155,24 +155,18 @@ dmypy.json
 cython_debug/
 
 # SeaKR generated research assets
-data/*
-!data/README.md
-!data/raw/
-!data/raw/README.md
-!data/processed/
-!data/processed/README.md
-models/*
-!models/README.md
-outputs/logs/*
-!outputs/logs/README.md
-outputs/predictions/*
-!outputs/predictions/README.md
+data/
+models/
+outputs/
+logs/
+.cache/
 *.pt
 *.bin
 *.safetensors
 *.ckpt
 *.gguf
-.cache/
+__pycache__/
+.env
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can

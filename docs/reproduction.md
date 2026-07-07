@@ -38,7 +38,7 @@ Use this checklist for SeaKR reproduction.
 
 ## 6. Full Reproduction Run
 
-- Run full HotpotQA/2WikiHop/IIRC experiments on Azure GPU.
+- Run full HotpotQA/2WikiHop/IIRC experiments on a Linux CUDA GPU machine.
 - Preserve command lines and configs.
 - Evaluate outputs with the repository notebooks or equivalent scripts.
 - Report metrics without inventing or extrapolating results.
