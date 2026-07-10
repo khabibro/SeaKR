@@ -15,13 +15,14 @@ from beir.datasets.data_loader import GenericDataLoader
 def build_elasticsearch(
     beir_corpus_file_pattern: str,
     index_name: str,
+    host: str,
     port: int
 ):
     beir_corpus_files = glob.glob(beir_corpus_file_pattern)
     print(f'#files {len(beir_corpus_files)}')
     from beir.retrieval.search.lexical.elastic_search import ElasticSearch
     config = {
-        'hostname': {"host": "localhost", "port": port},
+        'hostname': {"host": host, "port": port},
         'index_name': index_name,
         'keys': {'title': 'title', 'body': 'txt'},
         'timeout': 100,
@@ -66,6 +67,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_path', type=str, default=None, help='input file')
     parser.add_argument("--index_name", type=str, default=None, help="index name")
-    parser.add_argument("--port", type=str, default=None, help="index name")
+    parser.add_argument("--host", type=str, default="localhost", help="Elasticsearch host")
+    parser.add_argument("--port", type=int, default=9201, help="Elasticsearch port")
     args = parser.parse_args()
-    build_elasticsearch(args.data_path, index_name=args.index_name, port=args.port)
+    build_elasticsearch(args.data_path, index_name=args.index_name, host=args.host, port=args.port)

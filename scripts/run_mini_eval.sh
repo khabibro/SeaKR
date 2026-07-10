@@ -6,7 +6,8 @@ PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 MODEL_NAME_OR_PATH="${MODEL_NAME_OR_PATH:-${MODEL_DIR:-${ROOT}/models}/Llama-2-7b-chat-hf}"
 DATASET_NAME="${DATASET_NAME:-hotpotqa}"
-RETRIEVER_PORT="${RETRIEVER_PORT:-9201}"
+RETRIEVER_HOST="${RETRIEVER_HOST:-${ES_HOST:-localhost}}"
+RETRIEVER_PORT="${RETRIEVER_PORT:-${ES_PORT:-9201}}"
 OUTPUT_DIR="${OUTPUT_DIR:-${ROOT}/outputs/mini}"
 
 mkdir -p "${OUTPUT_DIR}"
@@ -14,6 +15,7 @@ mkdir -p "${OUTPUT_DIR}"
 "${PYTHON_BIN}" "${ROOT}/scripts/seakr_one_gpu.py" run-mini-eval \
   --model-name-or-path "${MODEL_NAME_OR_PATH}" \
   --dataset-name "${DATASET_NAME}" \
+  --retriever-host "${RETRIEVER_HOST}" \
   --retriever-port "${RETRIEVER_PORT}" \
   --output-dir "${OUTPUT_DIR}" \
   --limit 20

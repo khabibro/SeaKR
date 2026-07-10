@@ -36,7 +36,17 @@ def _normalize_answer(text: Optional[str]) -> str:
     return text
 
 
-def _f1_score(prediction: Optional[str], gold: Optional[str]) -> float:
+def _gold_values(gold: Any) -> List[str]:
+    if isinstance(gold, list):
+        return [str(item) for item in gold]
+    return [str(gold)]
+
+
+def _f1_score(prediction: Optional[str], gold: Any) -> float:
+    return max((_f1_score_one(prediction, one_gold) for one_gold in _gold_values(gold)), default=0.0)
+
+
+def _f1_score_one(prediction: Optional[str], gold: Optional[str]) -> float:
     pred_tokens = _normalize_answer(prediction).split()
     gold_tokens = _normalize_answer(gold).split()
     if not pred_tokens and not gold_tokens:
@@ -59,8 +69,8 @@ def _f1_score(prediction: Optional[str], gold: Optional[str]) -> float:
     return 2 * precision * recall / (precision + recall)
 
 
-def _exact_match(prediction: Optional[str], gold: Optional[str]) -> float:
-    return float(_normalize_answer(prediction) == _normalize_answer(gold))
+def _exact_match(prediction: Optional[str], gold: Any) -> float:
+    return float(any(_normalize_answer(prediction) == _normalize_answer(one_gold) for one_gold in _gold_values(gold)))
 
 
 def _ensure_dir(path: Path) -> None:
@@ -89,11 +99,12 @@ def _build_async_engine_args(args: argparse.Namespace) -> AsyncEngineArgs:
     )
 
 
-def _build_retriever(tokenizer, retriever_port: int):
+def _build_retriever(tokenizer, retriever_host: str, retriever_port: int):
     return BM25(
         tokenizer=tokenizer,
         index_name="wiki",
         engine="elasticsearch",
+        host=retriever_host,
         port=retriever_port,
     )
 
@@ -188,7 +199,7 @@ async def run_smoke_test_async(args: argparse.Namespace) -> None:
     entry = dataset_list[0]
 
     tokenizer = _build_tokenizer(args.model_name_or_path)
-    retriever = _build_retriever(tokenizer, args.retriever_port)
+    retriever = _build_retriever(tokenizer, args.retriever_host, args.retriever_port)
     llm_engine = AsyncLLMEngine.from_engine_args(_build_async_engine_args(args))
 
     reasoner = MultiHopReasoner(
@@ -276,7 +287,7 @@ async def run_mini_eval_async(args: argparse.Namespace) -> None:
         raise RuntimeError("Dataset returned no examples.")
 
     tokenizer = _build_tokenizer(args.model_name_or_path)
-    retriever = _build_retriever(tokenizer, args.retriever_port)
+    retriever = _build_retriever(tokenizer, args.retriever_host, args.retriever_port)
     llm_engine = AsyncLLMEngine.from_engine_args(_build_async_engine_args(args))
 
     predictions: List[Dict[str, Any]] = []
@@ -361,6 +372,7 @@ def _add_common_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--model-name-or-path", required=True)
     parser.add_argument("--served-model-name", default="llama2-7b-chat")
     parser.add_argument("--dataset-name", default="hotpotqa")
+    parser.add_argument("--retriever-host", default="localhost")
     parser.add_argument("--retriever-port", type=int, default=9201)
     parser.add_argument("--n-shot", type=int, default=10)
     parser.add_argument("--selected-intermediate-layer", type=int, default=15)

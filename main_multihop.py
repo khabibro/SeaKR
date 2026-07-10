@@ -119,6 +119,7 @@ async def main(args):
         tokenizer=tokenizer, 
         index_name="wiki", 
         engine="elasticsearch",
+        host=args.retriever_host,
         port=args.retriever_port,
     )
 
@@ -154,6 +155,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Run the model with provided arguments.")
     parser.add_argument("--dataset_name", required=True, help="Name of the dataset.")
+    parser.add_argument("--retriever_host", default="localhost", help="Host of Elastic Search Service.")
     parser.add_argument("--retriever_port", required=True, help="Port of Elastic Search Service.")
     parser.add_argument("--n_shot", type=int, default=10, help="Number of examples per task.")
     parser.add_argument("--model_name_or_path", required=True, help="Pre-trained model name or path.")

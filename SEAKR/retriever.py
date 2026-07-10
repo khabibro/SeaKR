@@ -28,6 +28,7 @@ class BM25:
         tokenizer: AutoTokenizer = None,
         index_name: str = None,
         engine: str = 'elasticsearch',
+        host: str = "localhost",
         port=9201,
         **search_engine_kwargs,
     ):
@@ -37,7 +38,7 @@ class BM25:
         if engine == 'elasticsearch':
             self.max_ret_topk = 1000
             self.retriever = EvaluateRetrieval(
-                BM25Search(index_name=index_name, hostname={"host": "localhost", "port": port}, initialize=False, number_of_shards=1),
+                BM25Search(index_name=index_name, hostname={"host": host, "port": port}, initialize=False, number_of_shards=1),
                 k_values=[self.max_ret_topk])
 
     @retry(stop=stop_after_attempt(2), wait=wait_fixed(2))
